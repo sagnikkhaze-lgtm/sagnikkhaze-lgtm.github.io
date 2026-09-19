@@ -61,7 +61,7 @@ function Section({
 
 function Home() {
   return (
-    <main className="relative min-h-screen bg-background grid-backdrop">
+    <main className="min-h-screen">
       <ScrollProgress />
       <Hero />
 
