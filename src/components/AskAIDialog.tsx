@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Sparkles, Send, Bot, User } from "lucide-react";
+import { askProjectAI } from "@/lib/ai";
 
 type Message = {
   sender: "user" | "ai";
@@ -18,39 +19,44 @@ export function AskAIDialog({
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "ai",
-      text: `Hi! I'm Sagnik's AI assistant. Ask me anything about "${itemTitle}"—such as how it works, the tech stack, code implementation, or key features!`,
+      text: `Hi! I'm Sagnik's specialized AI assistant for "${itemTitle}". Ask me ANYTHING and EVERYTHING about this project or post—architecture, memory allocation, code snippets, dependencies, or features!`,
     },
   ]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isThinking) return;
 
     const userText = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { sender: "user", text: userText }]);
+    const newHistory = [...messages, { sender: "user" as const, text: userText }];
+    setMessages(newHistory);
     setIsThinking(true);
 
-    setTimeout(() => {
-      let reply = "";
-      const lower = userText.toLowerCase();
-
-      if (lower.includes("stack") || lower.includes("tech") || lower.includes("language")) {
-        reply = `"${itemTitle}" is built with clean architecture and modern developer tooling. Here is the context:\n\n${itemContext.slice(0, 250)}`;
-      } else if (lower.includes("how") || lower.includes("work") || lower.includes("explain")) {
-        reply = `Great question! "${itemTitle}" is designed around modular principles. Core summary: ${itemContext.slice(0, 300)}...`;
-      } else if (lower.includes("c ") || lower.includes("pointer") || lower.includes("memory")) {
-        reply = `For C systems programming in "${itemTitle}", memory safety and explicit pointer hygiene are top priorities—using allocation checks and stdin buffer sanitization.`;
-      } else {
-        reply = `Regarding "${itemTitle}": ${itemContext.slice(0, 220)}... Feel free to ask about its installation, usage, or source code!`;
-      }
+    try {
+      const reply = await askProjectAI({
+        itemTitle,
+        itemContext,
+        userQuestion: userText,
+        history: messages,
+      });
 
       setMessages((prev) => [...prev, { sender: "ai", text: reply }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: `Regarding "${itemTitle}":\n\n${itemContext.slice(0, 300)}...`,
+        },
+      ]);
+    } finally {
       setIsThinking(false);
-    }, 600);
+    }
   };
+
 
   return (
     <>
