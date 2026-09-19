@@ -1,6 +1,8 @@
 import { repos as bakedRepos, type Repo } from "@/data/repos";
+import { bakedBlogPosts } from "@/data/blogPosts";
 
 const USER = "sagnikkhaze-lgtm";
+
 const BLOG_REPO = "sagnikkhaze-lgtm";
 const BLOG_DIR = "blog";
 const TTL_MS = 5 * 60 * 1000;
@@ -124,8 +126,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       { headers },
     );
     if (!res.ok) {
-      blogCache = { at: Date.now(), value: [] };
-      return [];
+      blogCache = { at: Date.now(), value: bakedBlogPosts };
+      return bakedBlogPosts;
     }
     const entries = (await res.json()) as Array<{
       name: string;
@@ -143,10 +145,12 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     );
 
     posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.title.localeCompare(b.title)));
-    blogCache = { at: Date.now(), value: posts };
-    return posts;
+    const result = posts.length > 0 ? posts : bakedBlogPosts;
+    blogCache = { at: Date.now(), value: result };
+    return result;
   } catch (error) {
     console.error("GitHub blog sync failed:", error);
-    return [];
+    return bakedBlogPosts;
   }
 }
+
