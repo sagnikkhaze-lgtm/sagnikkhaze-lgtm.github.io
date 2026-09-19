@@ -1,21 +1,20 @@
-# Applied Generative AI: From Prompt Engineering to LangChain Micro-Apps
+# Building the Tech Jargon Explainer with LangChain & OpenAI
 
-Generative AI applications are transforming software engineering by converting dense technical domain knowledge into intuitive human explanations.
+Ever tried explaining *Kubernetes* or *Vector Databases* to someone non-technical? You usually end up losing them in technical terms. I wanted a fast tool that breaks down dev concepts into simple analogies under 30 words.
 
 ---
 
-## Few-Shot Prompting & Analogy Generation
+## Simple Prompt Template Setup
 
-To translate complex developer concepts like *Kubernetes*, *Vector Databases*, or *Latency* into simple analogies under 30 words, structured system instructions are critical.
+Using LangChain with OpenAI's `gpt-4o-mini`, I chained a straightforward system prompt:
 
 ```python
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
 template = """
-You are a technical jargon simplifier.
-Explain the following concept in plain English under 30 words using a real-world analogy:
-Concept: {concept}
+You explain developer jargon simply.
+Explain "{concept}" in under 30 words using a quick real-world analogy.
 """
 
 prompt = PromptTemplate.from_template(template)
@@ -25,10 +24,8 @@ chain = prompt | llm
 
 ---
 
-## Security & Environment Best Practices
+## What I Learned
 
-When deploying GenAI projects:
-- **Zero-Leak Policy**: Keep API credentials exclusively inside environment variables (`.env`).
-- **Input Guardrails**: Validate prompt lengths and sanitize inputs to avoid context window injection.
-
-Building modular AI tools with clear boundaries ensures reliable, production-ready inference.
+1. Keep system prompts concise to reduce response latency.
+2. Store API keys strictly in `.env` variables (`python-dotenv`).
+3. Gradio makes it effortless to slap a reactive UI on top of Python scripts.

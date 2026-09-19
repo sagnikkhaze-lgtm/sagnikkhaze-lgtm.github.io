@@ -1,12 +1,12 @@
-# Designing Neobrutalist Web Apps with React, Vite, and Firestore
+# Setting up a Neobrutalist SPA with Vite & Firestore
 
-Neobrutalism combines bold typography, high-contrast borders, structural grid layouts, and vibrant dark modes to create memorable user experiences.
+For this portfolio redesign, I wanted a sharp, dark-first neobrutalist aesthetic with zero bloat and instant page loads. Here is how the stack comes together.
 
 ---
 
-## 1. Single Page Application Architecture
+## 1. SPA Routing with TanStack Router
 
-Using **Vite** with **TanStack Router** provides type-safe client-side routing, instant hot-module replacement (HMR), and lightning-fast sub-second build times.
+Instead of heavy SSR frameworks, standard Vite with TanStack Router provides lightweight client-side routing with clean 404 fallbacks for GitHub Pages:
 
 ```tsx
 import { RouterProvider, createRouter } from "@tanstack/react-router";
@@ -17,18 +17,22 @@ const router = createRouter({ routeTree });
 
 ---
 
-## 2. Real-Time Data & Firestore Atomic Increments
+## 2. Atomic Likes with Firestore
 
-For interactive features like real-time project like counters or contact forms, Google Cloud Firestore provides serverless scalability:
+For the interactive project like button, I hooked up Google Cloud Firestore using `increment(1)` so total likes update in real-time without overwriting concurrent clicks:
 
 ```typescript
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, increment } from "firebase/firestore";
 
-async function addLike(itemId: string) {
+async function handleLike(itemId: string) {
   const ref = doc(db, "likes", itemId);
   await updateDoc(ref, { count: increment(1) });
 }
 ```
 
-By combining sleek CSS keyframe micro-animations with structured backend database APIs, modern web apps deliver dynamic responsiveness.
+---
+
+## Conclusion
+
+Clean layout, fast build step, and live database persistence—everything runs smoothly on GitHub Pages.

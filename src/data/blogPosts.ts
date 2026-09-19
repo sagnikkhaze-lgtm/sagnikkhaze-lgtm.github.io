@@ -3,52 +3,51 @@ import type { BlogPost } from "@/lib/github.functions";
 export const bakedBlogPosts: BlogPost[] = [
   {
     slug: "2026-09-18-building-high-performance-c-systems",
-    title: "Building High-Performance C & Systems Programming Tools",
+    title: "Practical C: Dealing with Heap Allocations and Terminal Buffers",
     date: "2026-09-18",
-    excerpt: "Insights on memory safety, pointer hygiene, stack vs heap allocation, and building deterministic CLI utilities in low-level C.",
+    excerpt: "A quick walkthrough on preventing dynamic allocation crashes and handling leftover newline characters when writing CLI utilities in C.",
     url: "https://github.com/sagnikkhaze-lgtm/sagnikkhaze-lgtm/tree/main/blog/2026-09-18-building-high-performance-c-systems.md",
-    body: `# Building High-Performance C & Systems Programming Tools
+    body: `# Practical C: Dealing with Heap Allocations and Terminal Buffers
 
-When writing systems code in C, efficiency and predictability are paramount. Unlike garbage-collected languages, C grants direct memory management and layout control, requiring explicit pointer hygiene and runtime discipline.
+Working close to the metal in C means you don't get the safety net of garbage collection. If you mess up pointer hygiene or forget to clear stdin, your app either segfaults or acts weirdly on user input. Here are two patterns I stick to when building CLI utilities.
 
 ---
 
-## 1. Memory Safety & Heap Allocations
+## 1. Safe Heap Allocation & Pointer Cleanup
 
-A common source of bugs in systems utilities stems from uninitialized heap pointers and dangling references. Always check memory allocation results before dereferencing:
+Unchecked \`malloc\` returns can blow up your program if memory runs out. I always wrap heap allocations and explicitly set freed pointers back to \`NULL\` to catch accidental reuse:
 
 \`\`\`c
 #include <stdio.h>
 #include <stdlib.h>
 
-int *allocate_array(size_t count) {
-    int *arr = (int *)malloc(count * sizeof(int));
-    if (arr == NULL) {
-        fprintf(stderr, "[ERROR] Memory allocation failed\\n");
+int *init_buffer(size_t size) {
+    int *buf = malloc(size * sizeof(int));
+    if (!buf) {
+        perror("Allocation failed");
         return NULL;
     }
-    return arr;
+    return buf;
+}
+
+void cleanup(int **buf) {
+    if (buf && *buf) {
+        free(*buf);
+        *buf = NULL; // Zero out the pointer
+    }
 }
 \`\`\`
 
-### Key Pointer Rules:
-1. **Always set freed pointers to \`NULL\`**: Prevents accidental double-free vulnerabilities.
-2. **Buffer Sanitization**: Flush residual characters in terminal input streams when using \`getchar()\` loops.
-3. **Struct Alignment**: Order struct members by decreasing byte size to minimize compiler padding.
-
 ---
 
-## 2. Deterministic CLI Terminal Utilities
+## 2. Cleaning up \`fgets\` Trailing Newlines
 
-Building interactive CLI tools requires safe input parsing. Replacing naive \`scanf()\` calls with \`fgets()\` combined with newline stripping ensures deterministic user interaction:
+\`scanf("%c")\` often leaves trailing \`\\n\` characters in the input stream, causing subsequent prompts to be skipped. Using \`fgets()\` and trimming the newline directly keeps input handling predictable:
 
 \`\`\`c
-char buffer[128];
-if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-    size_t len = strlen(buffer);
-    if (len > 0 && buffer[len - 1] == '\\n') {
-        buffer[len - 1] = '\\0'; // Safe newline truncation
-    }
+char input[128];
+if (fgets(input, sizeof(input), stdin)) {
+    input[strcspn(input, "\\n")] = '\\0'; // Clean newline
 }
 \`\`\`
 
@@ -56,33 +55,32 @@ if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
 
 ## Conclusion
 
-Mastering low-level primitives in C builds a solid foundation for systems engineering, database engines, and embedded systems architecture.
+Writing clean C takes extra care, but the speed and small binary footprint make it completely worth it.
 `
   },
   {
     slug: "2026-09-15-applied-genai-with-langchain-and-python",
-    title: "Applied Generative AI: From Prompt Engineering to LangChain Micro-Apps",
+    title: "Building the Tech Jargon Explainer with LangChain & OpenAI",
     date: "2026-09-15",
-    excerpt: "Lessons learned building real-time LLM tools like the Tech Jargon Explainer using LangChain, OpenAI models, and reactive UIs.",
+    excerpt: "How I built a small micro-app that translates complex dev concepts into short 30-word analogies using Python and Gradio.",
     url: "https://github.com/sagnikkhaze-lgtm/sagnikkhaze-lgtm/tree/main/blog/2026-09-15-applied-genai-with-langchain-and-python.md",
-    body: `# Applied Generative AI: From Prompt Engineering to LangChain Micro-Apps
+    body: `# Building the Tech Jargon Explainer with LangChain & OpenAI
 
-Generative AI applications are transforming software engineering by converting dense technical domain knowledge into intuitive human explanations.
+Ever tried explaining *Kubernetes* or *Vector Databases* to someone non-technical? You usually end up losing them in technical terms. I wanted a fast tool that breaks down dev concepts into simple analogies under 30 words.
 
 ---
 
-## Few-Shot Prompting & Analogy Generation
+## Simple Prompt Template Setup
 
-To translate complex developer concepts like *Kubernetes*, *Vector Databases*, or *Latency* into simple analogies under 30 words, structured system instructions are critical.
+Using LangChain with OpenAI's \`gpt-4o-mini\`, I chained a straightforward system prompt:
 
 \`\`\`python
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
 template = """
-You are a technical jargon simplifier.
-Explain the following concept in plain English under 30 words using a real-world analogy:
-Concept: {concept}
+You explain developer jargon simply.
+Explain "{concept}" in under 30 words using a quick real-world analogy.
 """
 
 prompt = PromptTemplate.from_template(template)
@@ -92,30 +90,28 @@ chain = prompt | llm
 
 ---
 
-## Security & Environment Best Practices
+## What I Learned
 
-When deploying GenAI projects:
-- **Zero-Leak Policy**: Keep API credentials exclusively inside environment variables (\`.env\`).
-- **Input Guardrails**: Validate prompt lengths and sanitize inputs to avoid context window injection.
-
-Building modular AI tools with clear boundaries ensures reliable, production-ready inference.
+1. Keep system prompts concise to reduce response latency.
+2. Store API keys strictly in \`.env\` variables (\`python-dotenv\`).
+3. Gradio makes it effortless to slap a reactive UI on top of Python scripts.
 `
   },
   {
     slug: "2026-09-10-modern-web-architecture-with-react-vite-and-firestore",
-    title: "Designing Neobrutalist Web Apps with React, Vite, and Firestore",
+    title: "Setting up a Neobrutalist SPA with Vite & Firestore",
     date: "2026-09-10",
-    excerpt: "Architecting responsive, high-performance portfolios with TanStack Router, neobrutalist UI design, and real-time Firestore database integration.",
+    excerpt: "Notes on using React, TanStack Router for SPA navigation, and connecting Firestore for real-time like counters.",
     url: "https://github.com/sagnikkhaze-lgtm/sagnikkhaze-lgtm/tree/main/blog/2026-09-10-modern-web-architecture-with-react-vite-and-firestore.md",
-    body: `# Designing Neobrutalist Web Apps with React, Vite, and Firestore
+    body: `# Setting up a Neobrutalist SPA with Vite & Firestore
 
-Neobrutalism combines bold typography, high-contrast borders, structural grid layouts, and vibrant dark modes to create memorable user experiences.
+For this portfolio redesign, I wanted a sharp, dark-first neobrutalist aesthetic with zero bloat and instant page loads. Here is how the stack comes together.
 
 ---
 
-## 1. Single Page Application Architecture
+## 1. SPA Routing with TanStack Router
 
-Using **Vite** with **TanStack Router** provides type-safe client-side routing, instant hot-module replacement (HMR), and lightning-fast sub-second build times.
+Instead of heavy SSR frameworks, standard Vite with TanStack Router provides lightweight client-side routing with clean 404 fallbacks for GitHub Pages:
 
 \`\`\`tsx
 import { RouterProvider, createRouter } from "@tanstack/react-router";
@@ -126,21 +122,25 @@ const router = createRouter({ routeTree });
 
 ---
 
-## 2. Real-Time Data & Firestore Atomic Increments
+## 2. Atomic Likes with Firestore
 
-For interactive features like real-time project like counters or contact forms, Google Cloud Firestore provides serverless scalability:
+For the interactive project like button, I hooked up Google Cloud Firestore using \`increment(1)\` so total likes update in real-time without overwriting concurrent clicks:
 
 \`\`\`typescript
 import { db } from "@/lib/firebase";
 import { doc, updateDoc, increment } from "firebase/firestore";
 
-async function addLike(itemId: string) {
+async function handleLike(itemId: string) {
   const ref = doc(db, "likes", itemId);
   await updateDoc(ref, { count: increment(1) });
 }
 \`\`\`
 
-By combining sleek CSS keyframe micro-animations with structured backend database APIs, modern web apps deliver dynamic responsiveness.
+---
+
+## Conclusion
+
+Clean layout, fast build step, and live database persistence—everything runs smoothly on GitHub Pages.
 `
   }
 ];

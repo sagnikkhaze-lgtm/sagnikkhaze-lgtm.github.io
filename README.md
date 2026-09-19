@@ -1,6 +1,6 @@
-# Sagnikk's Portfolio
+# Sagnik's Portfolio
 
-**Live site**: [agnikkk.me](https://agnikkk.me)
+**Live site**: [sagnikkk.me](https://sagnikkk.me)
 
 Portfolio of Sagnik Nag — a software developer at St. Xavier's College, Kolkata.
 Browse the project deck, run the interactive C fundamentals session, read blog posts, and get in touch.
@@ -9,7 +9,8 @@ Browse the project deck, run the interactive C fundamentals session, read blog p
 
 - **Frontend**: React, TanStack Router, Tailwind CSS v4, Vite
 - **Database**: Firebase / Firestore
-- **Hosting**: GitHub Pages (custom domain `agnikkk.me`)
+- **Hosting**: GitHub Pages (custom domain `sagnikkk.me`)
+
 - **Design**: Neobrutalist Precision — Fira Code + IBM Plex Sans, sharp corners, structural grid, dark-first
 
 ## Development
