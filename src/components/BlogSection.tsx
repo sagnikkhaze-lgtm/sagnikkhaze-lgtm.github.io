@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, X, Sparkles } from "lucide-react";
 import { useBlogPosts } from "@/lib/useGithub";
 import { site } from "@/lib/site";
 import { Markdown } from "./Markdown";
 import { LikeButton } from "./LikeButton";
-import { useEnquiry } from "./EnquiryProvider";
 import { useInView } from "./Reveal";
+import { AskAIDialog } from "./AskAIDialog";
 import type { BlogPost } from "@/lib/github.functions";
 
 export function BlogSection() {
   const { posts, isLoading } = useBlogPosts();
   const [reading, setReading] = useState<BlogPost | null>(null);
-  const { enquireAbout } = useEnquiry();
+  const [askingAI, setAskingAI] = useState<BlogPost | null>(null);
   const { ref: gridRef, inView } = useInView<HTMLUListElement>();
 
   if (isLoading) {
@@ -80,15 +80,24 @@ export function BlogSection() {
               </button>
               <button
                 type="button"
-                onClick={() => enquireAbout(post.title)}
-                className="snap-transition border border-foreground bg-foreground px-3 py-2 font-mono text-xs uppercase tracking-wider text-background hover:bg-background hover:text-foreground"
+                onClick={() => setAskingAI(post)}
+                className="snap-transition inline-flex items-center justify-center gap-1.5 border border-foreground bg-foreground px-3 py-2 font-mono text-xs uppercase tracking-wider text-background hover:bg-background hover:text-foreground"
               >
-                Enquire
+                <Sparkles className="h-3.5 w-3.5" /> Ask AI
               </button>
             </div>
           </li>
         ))}
       </ul>
+
+      {askingAI && (
+        <AskAIDialog
+          itemTitle={askingAI.title}
+          itemContext={askingAI.body}
+          onClose={() => setAskingAI(null)}
+        />
+      )}
+
 
       {reading && (
         <>

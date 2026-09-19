@@ -61,7 +61,7 @@ function Section({
 
 function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="relative min-h-screen bg-background grid-backdrop">
       <ScrollProgress />
       <Hero />
 
@@ -69,22 +69,23 @@ function Home() {
         <div className="grid gap-px border border-border bg-border md:grid-cols-3">
           <div className="bg-card p-6 md:col-span-2">
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Sagnik is a software developer studying at {site.college}. His public work runs from low-level C
-              practice — pointers, structs, dynamic memory and file I/O — through HTML and CSS fundamentals, up to
-              applied GenAI tools built with Python, LangChain and Gradio. Every repository ships with full
-              documentation, locked dependencies and a strict zero-leak policy for credentials.
+              I'm Sagnik Nag, a software developer studying at {site.college}. My public work spans low-level C
+              systems programming—pointers, structs, dynamic memory, and file I/O—up to applied GenAI tools built with
+              Python, LangChain, and Gradio. Every repository ships with full documentation, clean architecture, and
+              locked dependencies.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              {repos.length} public repositories. {cPrograms.length} C programs documented below, five of which you
-              can run right here in the browser.
+              I have {repos.length} public repositories and {cPrograms.length} C programs documented below, five of which
+              you can execute right here in your browser.
             </p>
           </div>
           <div className="bg-card p-6">
-            <p className="rule-label mb-3">Tools</p>
-            <ul className="space-y-2 font-mono text-xs text-muted-foreground">
+            <p className="rule-label mb-3">Tools:</p>
+            <ul className="space-y-1.5 font-mono text-xs text-muted-foreground">
               {site.tools.map((t) => (
-                <li key={t}>{t}</li>
+                <li key={t}>• {t}</li>
               ))}
+              <li>• macOS</li>
             </ul>
             <p className="rule-label mt-6 mb-3">Links</p>
             <a

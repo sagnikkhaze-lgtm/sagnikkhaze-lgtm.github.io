@@ -1,12 +1,11 @@
 import { useRef, useState, useCallback } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, Github, MessageSquare, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Github, Sparkles, X } from "lucide-react";
 import { type Repo } from "@/data/repos";
 import { useLiveRepos } from "@/lib/useGithub";
 import { Markdown } from "./Markdown";
 import { LikeButton } from "./LikeButton";
-import { useEnquiry } from "./EnquiryProvider";
 import { useInView } from "./Reveal";
-import { cn } from "@/lib/utils";
+import { AskAIDialog } from "./AskAIDialog";
 
 function useTiltEffect() {
   const [style, setStyle] = useState<React.CSSProperties>({});
@@ -36,7 +35,7 @@ export function ProjectsDeck() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [reading, setReading] = useState<Repo | null>(null);
-  const { enquireAbout } = useEnquiry();
+  const [askingAI, setAskingAI] = useState<Repo | null>(null);
   const drag = useRef<{ x: number; left: number } | null>(null);
   const { ref: deckRef, inView } = useInView<HTMLDivElement>();
 
@@ -108,11 +107,19 @@ export function ProjectsDeck() {
               index={i}
               onHover={() => setHovered(repo.id)}
               onRead={() => setReading(repo)}
-              onEnquire={() => enquireAbout(repo.title)}
+              onAskAI={() => setAskingAI(repo)}
             />
           );
         })}
       </div>
+
+      {askingAI && (
+        <AskAIDialog
+          itemTitle={askingAI.title}
+          itemContext={`${askingAI.description}\n\nLanguage: ${askingAI.language}\n\nReadme snippet:\n${askingAI.readme.slice(0, 500)}`}
+          onClose={() => setAskingAI(null)}
+        />
+      )}
 
       {reading && (
         <>
@@ -151,12 +158,13 @@ export function ProjectsDeck() {
                 <button
                   type="button"
                   onClick={() => {
+                    const current = reading;
                     setReading(null);
-                    enquireAbout(reading.title);
+                    setAskingAI(current);
                   }}
-                  className="snap-transition mt-4 w-full border border-foreground bg-foreground px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-background hover:bg-background hover:text-foreground"
+                  className="snap-transition mt-4 inline-flex w-full items-center justify-center gap-2 border border-foreground bg-foreground px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-background hover:bg-background hover:text-foreground"
                 >
-                  Enquire about {reading.title}
+                  <Sparkles className="h-4 w-4" /> Ask AI about {reading.title}
                 </button>
               </div>
             </div>
@@ -175,7 +183,7 @@ function ProjectCard({
   index,
   onHover,
   onRead,
-  onEnquire,
+  onAskAI,
 }: {
   repo: Repo;
   dim: boolean;
@@ -184,7 +192,7 @@ function ProjectCard({
   index: number;
   onHover: () => void;
   onRead: () => void;
-  onEnquire: () => void;
+  onAskAI: () => void;
 }) {
   const tilt = useTiltEffect();
 
@@ -240,12 +248,13 @@ function ProjectCard({
         </button>
         <button
           type="button"
-          onClick={onEnquire}
-          className="snap-transition inline-flex items-center justify-center gap-2 border border-foreground bg-foreground px-3 py-2 font-mono text-xs uppercase tracking-wider text-background hover:bg-background hover:text-foreground"
+          onClick={onAskAI}
+          className="snap-transition inline-flex items-center justify-center gap-1.5 border border-foreground bg-foreground px-3 py-2 font-mono text-xs uppercase tracking-wider text-background hover:bg-background hover:text-foreground"
         >
-          <MessageSquare className="h-3.5 w-3.5" /> Enquire
+          <Sparkles className="h-3.5 w-3.5" /> Ask AI
         </button>
       </div>
     </article>
   );
 }
+
